@@ -1,0 +1,34 @@
+name: 'changelog-action'
+description: 'Generate formatted changelog'
+
+branding:
+  color: yellow
+  icon: file-text
+
+inputs:
+  current_tag:
+    description: 'The current tag to be used instead of auto detecting'
+    required: false
+  previous_tag:
+    description: 'The previous tag to be used instead of auto detecting'
+    required: false
+  exclude:
+    description: 'Commit messages matching the regexp listed here will be removed from the output'
+    required: false
+  debug:
+    description: 'Enables debug mode'
+    default: 'false'
+    required: false
+
+outputs:
+  changelog:
+    description: 'The formatted changelog'
+
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
+  args:
+    - ${{ inputs.current_tag }}
+    - ${{ inputs.previous_tag }}
+    - ${{ inputs.exclude }}
+    - ${{ inputs.debug }} 
