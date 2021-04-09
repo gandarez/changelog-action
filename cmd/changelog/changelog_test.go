@@ -11,10 +11,10 @@ import (
 
 func TestChangelog(t *testing.T) {
 	tests := map[string]struct {
-		LatestTag   string
-		PreviousTag string
-		Params      changelog.Params
-		Expected    string
+		LatestTagOrHash string
+		PreviousTag     string
+		Params          changelog.Params
+		Expected        string
 	}{
 		"no previous tag": {
 			PreviousTag: "e63c125b28842b17546cc92f635d7eccc8e909a7",
@@ -22,16 +22,24 @@ func TestChangelog(t *testing.T) {
 				"2b982db First commit",
 		},
 		"auto": {
-			LatestTag:   "v0.2.0",
-			PreviousTag: "v0.1.0",
+			LatestTagOrHash: "v0.2.0",
+			PreviousTag:     "v0.1.0",
+			Expected: "## Changelog\n\n" +
+				"2b982db First commit\n" +
+				"5a359bb Second commit\n" +
+				"1774db0 Merge pull request #1 from author/feature/feat-1",
+		},
+		"auto and latest tag is hash": {
+			LatestTagOrHash: "e63c125b28842b17546cc92f635d7eccc8e909a7",
+			PreviousTag:     "53db8447314a82e42e801568a085d424a739260a",
 			Expected: "## Changelog\n\n" +
 				"2b982db First commit\n" +
 				"5a359bb Second commit\n" +
 				"1774db0 Merge pull request #1 from author/feature/feat-1",
 		},
 		"current tag set": {
-			LatestTag:   "",
-			PreviousTag: "v0.2.0",
+			LatestTagOrHash: "",
+			PreviousTag:     "v0.2.0",
 			Params: changelog.Params{
 				CurrentTag: "v0.3.0",
 			},
@@ -40,8 +48,8 @@ func TestChangelog(t *testing.T) {
 				"c57f56f Third commit",
 		},
 		"current tag and previous tag set": {
-			LatestTag:   "",
-			PreviousTag: "",
+			LatestTagOrHash: "",
+			PreviousTag:     "",
 			Params: changelog.Params{
 				CurrentTag:  "v0.3.0",
 				PreviousTag: "v0.1.0",
@@ -52,8 +60,8 @@ func TestChangelog(t *testing.T) {
 				"c57f56f Third commit",
 		},
 		"auto and exclude": {
-			LatestTag:   "v0.2.0",
-			PreviousTag: "v0.1.0",
+			LatestTagOrHash: "v0.2.0",
+			PreviousTag:     "v0.1.0",
 			Params: changelog.Params{
 				Exclude: []string{
 					"^Merge pull request .*",
@@ -69,7 +77,7 @@ func TestChangelog(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			gc := initGitClientMock(
 				t,
-				test.LatestTag,
+				test.LatestTagOrHash,
 				test.PreviousTag,
 			)
 
@@ -82,14 +90,14 @@ func TestChangelog(t *testing.T) {
 }
 
 type gitClientMock struct {
-	LatestTagFn          func() string
-	LatestTagFnInvoked   int
-	IsRepoFn             func() bool
-	IsRepoFnInvoked      int
-	PreviousTagFn        func(tag string) (string, error)
-	PreviousTagFnInvoked int
-	LogFn                func(refs ...string) (string, error)
-	LogFnInvoked         int
+	LatestTagOrHashFn        func() string
+	LatestTagOrHashFnInvoked int
+	IsRepoFn                 func() bool
+	IsRepoFnInvoked          int
+	PreviousTagFn            func(tag string) (string, error)
+	PreviousTagFnInvoked     int
+	LogFn                    func(refs ...string) (string, error)
+	LogFnInvoked             int
 }
 
 func initGitClientMock(t *testing.T, latestTag, previousTag string) *gitClientMock {
@@ -97,7 +105,7 @@ func initGitClientMock(t *testing.T, latestTag, previousTag string) *gitClientMo
 		IsRepoFn: func() bool {
 			return true
 		},
-		LatestTagFn: func() string {
+		LatestTagOrHashFn: func() string {
 			return latestTag
 		},
 		PreviousTagFn: func(tag string) (string, error) {
@@ -108,6 +116,10 @@ func initGitClientMock(t *testing.T, latestTag, previousTag string) *gitClientMo
 			case "e63c125b28842b17546cc92f635d7eccc8e909a7":
 				return "2b982db First commit\n", nil
 			case "tags/v0.1.0..tags/v0.2.0":
+				return "2b982db First commit\n" +
+					"5a359bb Second commit\n" +
+					"1774db0 Merge pull request #1 from author/feature/feat-1\n", nil
+			case "53db8447314a82e42e801568a085d424a739260a":
 				return "2b982db First commit\n" +
 					"5a359bb Second commit\n" +
 					"1774db0 Merge pull request #1 from author/feature/feat-1\n", nil
@@ -130,9 +142,9 @@ func (m *gitClientMock) IsRepo() bool {
 	return m.IsRepoFn()
 }
 
-func (m *gitClientMock) LatestTag() string {
-	m.LatestTagFnInvoked += 1
-	return m.LatestTagFn()
+func (m *gitClientMock) LatestTagOrHash() string {
+	m.LatestTagOrHashFnInvoked += 1
+	return m.LatestTagOrHashFn()
 }
 
 func (m *gitClientMock) PreviousTag(tag string) (string, error) {

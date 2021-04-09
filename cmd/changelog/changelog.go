@@ -14,7 +14,7 @@ var validSHA1 = regexp.MustCompile(`^[a-fA-F0-9]{40}$`)
 
 type gitClient interface {
 	IsRepo() bool
-	LatestTag() string
+	LatestTagOrHash() string
 	PreviousTag(tag string) (string, error)
 	Log(refs ...string) (string, error)
 }
@@ -45,13 +45,13 @@ func Changelog(params Params, gc gitClient) (string, error) {
 	var tag string = params.CurrentTag
 
 	if tag == "" {
-		tag = gc.LatestTag()
+		tag = gc.LatestTagOrHash()
 	}
 
 	var refs []string = []string{fmt.Sprintf("tags/%s..tags/%s", params.PreviousTag, tag)}
 
 	if params.PreviousTag == "" {
-		previousTag, err := gc.PreviousTag(params.CurrentTag)
+		previousTag, err := gc.PreviousTag(tag)
 		if err != nil {
 			return "", fmt.Errorf("failed to get previous tag: %s", err)
 		}
