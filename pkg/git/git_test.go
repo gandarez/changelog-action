@@ -38,7 +38,7 @@ func TestLatestTag(t *testing.T) {
 		return "v0.2.17", nil
 	}
 
-	value := gc.LatestTag()
+	value := gc.LatestTagOrHash()
 
 	assert.Equal(t, "v0.2.17", value)
 }
@@ -57,12 +57,14 @@ func TestLatestTag_NoTagFound(t *testing.T) {
 			assert.Equal(t, args, []string{"tag", "--points-at", "HEAD", "--sort", "-version:creatordate"})
 		case 2:
 			assert.Equal(t, args, []string{"describe", "--tags", "--abbrev=0"})
+		case 3:
+			assert.Equal(t, args, []string{"rev-parse", "HEAD"})
 		}
 
 		return "", nil
 	}
 
-	value := gc.LatestTag()
+	value := gc.LatestTagOrHash()
 
 	assert.Empty(t, value)
 }

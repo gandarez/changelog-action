@@ -79,14 +79,17 @@ func (c *Client) IsRepo() bool {
 	return err == nil && strings.TrimSpace(out) == "true"
 }
 
-// LatestTag returns the latest tag if found.
-func (c *Client) LatestTag() string {
+// LatestTag returns the latest tag or commit hash.
+func (c *Client) LatestTagOrHash() string {
 	for _, fn := range []func() (string, error){
 		func() (string, error) {
 			return c.Clean(c.Run("tag", "--points-at", "HEAD", "--sort", "-version:creatordate"))
 		},
 		func() (string, error) {
 			return c.Clean(c.Run("describe", "--tags", "--abbrev=0"))
+		},
+		func() (string, error) {
+			return c.Clean(c.Run("rev-parse", "HEAD"))
 		},
 	} {
 		tag, _ := fn()
