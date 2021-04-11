@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/apex/log"
 	"github.com/gandarez/changelog-action/pkg/actions"
 )
 
@@ -32,6 +33,8 @@ func LoadParams() (Params, error) {
 
 	if excludeArr := actions.GetInput("exclude"); excludeArr != "" {
 		exclude = strings.Split(excludeArr, "\n")
+
+		log.Infof("exclude len: %d", len(exclude))
 	}
 
 	var debug bool
@@ -55,10 +58,10 @@ func LoadParams() (Params, error) {
 
 func (p Params) String() string {
 	return fmt.Sprintf(
-		"curren tag: %q, previous tag: %q, exclude: %q, debug: %t\n",
+		"current tag: %s, previous tag: %s, exclude: %s, debug: %t\n",
 		p.CurrentTag,
 		p.PreviousTag,
-		strings.Join(p.Exclude, ","),
+		strings.Join(p.Exclude, ";"),
 		p.Debug,
 	)
 }
