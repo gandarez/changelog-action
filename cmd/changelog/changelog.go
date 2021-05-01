@@ -9,9 +9,6 @@ import (
 	"github.com/gandarez/changelog-action/pkg/git"
 )
 
-// nolint
-var validSHA1 = regexp.MustCompile(`^[a-fA-F0-9]{40}$`)
-
 type gitClient interface {
 	IsRepo() bool
 	LatestTagOrHash() string
@@ -48,7 +45,7 @@ func Changelog(params Params, gc gitClient) (string, error) {
 		tag = gc.LatestTagOrHash()
 	}
 
-	var refs []string = []string{fmt.Sprintf("tags/%s..tags/%s", params.PreviousTag, tag)}
+	var refs []string = []string{fmt.Sprintf("%s..%s", params.PreviousTag, tag)}
 
 	if params.PreviousTag == "" {
 		previousTag, err := gc.PreviousTag(tag)
@@ -56,11 +53,7 @@ func Changelog(params Params, gc gitClient) (string, error) {
 			return "", fmt.Errorf("failed to get previous tag: %s", err)
 		}
 
-		refs = []string{fmt.Sprintf("tags/%s..tags/%s", previousTag, tag)}
-
-		if isSHA1(previousTag) {
-			refs = []string{previousTag, tag}
-		}
+		refs = []string{fmt.Sprintf("%s..%s", previousTag, tag)}
 	}
 
 	log, err := gc.Log(refs...)
@@ -106,9 +99,4 @@ func remove(filter *regexp.Regexp, entries []string) (result []string) {
 // extractCommitInfo removes first word which is the commit hash.
 func extractCommitInfo(line string) string {
 	return strings.Join(strings.Split(line, " ")[1:], " ")
-}
-
-// isSHA1 te lets us know if the ref is a SHA1 or not.
-func isSHA1(ref string) bool {
-	return validSHA1.MatchString(ref)
 }
