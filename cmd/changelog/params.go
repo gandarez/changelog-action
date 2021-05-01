@@ -55,7 +55,7 @@ func LoadParams() (Params, error) {
 
 func (p Params) String() string {
 	return fmt.Sprintf(
-		"curren tag: %q, previous tag: %q, exclude: %q, debug: %t\n",
+		"current tag: %q, previous tag: %q, exclude: %q, debug: %t\n",
 		p.CurrentTag,
 		p.PreviousTag,
 		strings.Join(p.Exclude, ","),

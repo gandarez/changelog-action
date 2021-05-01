@@ -23,9 +23,9 @@ This actions prints a formatted changelog.
     previous_tag: "v0.2.2"
     main_branch_name: "trunk"
     exclude: |
-        "^Merge pull request .*"
-        "Fix .*"
-    debug: "true"
+        ^Merge pull request .*
+        Fix .*
+    debug: true
 - name: "Print changelog"
   run: echo "${{ steps.changelog.outputs.changelog }}"
 ```
