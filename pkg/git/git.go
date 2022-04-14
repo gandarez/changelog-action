@@ -30,7 +30,9 @@ func gitCmdFn(env map[string]string, args ...string) (string, error) {
 	var extraArgs = []string{
 		"-c", "log.showSignature=false",
 	}
+
 	args = append(extraArgs, args...)
+
 	/* #nosec */
 	var cmd = exec.Command("git", args...)
 
@@ -48,6 +50,7 @@ func gitCmdFn(env map[string]string, args ...string) (string, error) {
 	cmd.Stderr = &stderr
 
 	log.WithField("args", args).Debug("running git")
+
 	err := cmd.Run()
 
 	log.WithField("stdout", stdout.String()).
@@ -62,8 +65,9 @@ func gitCmdFn(env map[string]string, args ...string) (string, error) {
 }
 
 // Clean the output.
-func (c *Client) Clean(output string, err error) (string, error) {
+func (Client) Clean(output string, err error) (string, error) {
 	output = strings.ReplaceAll(strings.Split(output, "\n")[0], "'", "")
+
 	if err != nil {
 		err = errors.New(strings.TrimSuffix(err.Error(), "\n"))
 	}
@@ -120,16 +124,23 @@ func (c *Client) LatestTagOrHash() string {
 }
 
 // PreviousTag returns the previous tag from passed tag.
-func (c *Client) PreviousTag(tag string) (result string, err error) {
+func (c *Client) PreviousTag(tag string) (string, error) {
+	var (
+		result string
+		err    error
+	)
+
 	result, err = c.Clean(c.Run("describe", "--tags", "--abbrev=0", fmt.Sprintf("tags/%s^", tag)))
 	if err != nil {
 		result, err = c.Clean(c.Run("rev-list", "--max-parents=0", "HEAD"))
 	}
-	return
+
+	return result, err
 }
 
 func (c *Client) Log(refs ...string) (string, error) {
 	var args = []string{"log", "--pretty=oneline", "--abbrev-commit", "--no-decorate", "--no-color"}
 	args = append(args, refs...)
+
 	return c.Run(args...)
 }

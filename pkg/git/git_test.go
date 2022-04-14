@@ -33,7 +33,8 @@ func TestLatestTag(t *testing.T) {
 	gc := git.NewGit("/path/to/repo")
 	gc.GitCmd = func(env map[string]string, args ...string) (string, error) {
 		assert.Nil(t, env)
-		assert.Equal(t, args, []string{"tag", "--points-at", "HEAD", "--sort", "-version:creatordate"})
+		assert.Equal(t, args, []string{
+			"tag", "--points-at", "HEAD", "--sort", "-version:creatordate"})
 
 		return "v0.2.17", nil
 	}
@@ -54,7 +55,8 @@ func TestLatestTag_NoTagFound(t *testing.T) {
 
 		switch numCalls {
 		case 1:
-			assert.Equal(t, args, []string{"tag", "--points-at", "HEAD", "--sort", "-version:creatordate"})
+			assert.Equal(t, args, []string{
+				"tag", "--points-at", "HEAD", "--sort", "-version:creatordate"})
 		case 2:
 			assert.Equal(t, args, []string{"describe", "--tags", "--abbrev=0"})
 		case 3:
@@ -112,12 +114,14 @@ func TestLog(t *testing.T) {
 	gc := git.NewGit("/path/to/repo")
 	gc.GitCmd = func(env map[string]string, args ...string) (string, error) {
 		assert.Nil(t, env)
-		assert.Equal(t, args, []string{"log", "--pretty=oneline", "--abbrev-commit", "--no-decorate", "--no-color", "tags/v1.2.3..tags/v1.3.0"})
+		assert.Equal(t, args, []string{
+			"log", "--pretty=oneline", "--abbrev-commit",
+			"--no-decorate", "--no-color", "v1.2.3..v1.3.0"})
 
 		return "2b982db Add workflows\n5a359bb Fix logging", nil
 	}
 
-	value, err := gc.Log("tags/v1.2.3..tags/v1.3.0")
+	value, err := gc.Log("v1.2.3..v1.3.0")
 	require.NoError(t, err)
 
 	assert.Equal(t, "2b982db Add workflows\n5a359bb Fix logging", value)
@@ -127,12 +131,14 @@ func TestLogErr(t *testing.T) {
 	gc := git.NewGit("/path/to/repo")
 	gc.GitCmd = func(env map[string]string, args ...string) (string, error) {
 		assert.Nil(t, env)
-		assert.Equal(t, args, []string{"log", "--pretty=oneline", "--abbrev-commit", "--no-decorate", "--no-color", "tags/v1.2.3..tags/v1.3.0"})
+		assert.Equal(t, args, []string{
+			"log", "--pretty=oneline", "--abbrev-commit",
+			"--no-decorate", "--no-color", "v1.2.3..v1.3.0"})
 
 		return "", errors.New("error")
 	}
 
-	_, err := gc.Log("tags/v1.2.3..tags/v1.3.0")
+	_, err := gc.Log("v1.2.3..v1.3.0")
 
 	assert.EqualError(t, err, "error")
 }

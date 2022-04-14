@@ -45,13 +45,13 @@ func Changelog(params Params, gc gitClient) (string, error) {
 		return "", fmt.Errorf("current folder is not a git repository")
 	}
 
-	var tag string = params.CurrentTag
+	var tag = params.CurrentTag
 
 	if tag == "" {
 		tag = gc.LatestTagOrHash()
 	}
 
-	var refs []string = []string{fmt.Sprintf("%s..%s", params.PreviousTag, tag)}
+	var refs = []string{fmt.Sprintf("%s..%s", params.PreviousTag, tag)}
 
 	if params.PreviousTag == "" {
 		previousTag, err := gc.PreviousTag(tag)
@@ -69,6 +69,7 @@ func Changelog(params Params, gc gitClient) (string, error) {
 
 	var entries = strings.Split(log, "\n")
 	entries = entries[0 : len(entries)-1]
+
 	entries, err = filterEntries(params.Exclude, entries)
 	if err != nil {
 		return "", err
@@ -88,18 +89,23 @@ func filterEntries(filters []string, entries []string) ([]string, error) {
 		if err != nil {
 			return entries, err
 		}
+
 		entries = remove(r, entries)
 	}
+
 	return entries, nil
 }
 
-func remove(filter *regexp.Regexp, entries []string) (result []string) {
+func remove(filter *regexp.Regexp, entries []string) []string {
+	var result []string
+
 	for _, entry := range entries {
 		if !filter.MatchString(extractCommitInfo(entry)) {
 			result = append(result, entry)
 		}
 	}
-	return
+
+	return result
 }
 
 // extractCommitInfo removes first word which is the commit hash.

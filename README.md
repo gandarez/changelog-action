@@ -37,6 +37,7 @@ This actions prints a formatted changelog.
 | current_tag         |          | The current tag to be used instead of auto detecting.                            |             |
 | previous_tag        |          | The previous tag to be used instead of auto detecting.                           |             |
 | exclude             |          | Commit messages matching the regexp listed here will be removed from the output. |             |
+| repo_dir            |          | The repository path.                                                              | current dir |
 | debug               |          | Enables debug mode.                                                              | false       |
 
 ## Outpus

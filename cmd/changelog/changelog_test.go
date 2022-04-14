@@ -76,7 +76,6 @@ func TestChangelog(t *testing.T) {
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			gc := initGitClientMock(
-				t,
 				test.LatestTagOrHash,
 				test.PreviousTag,
 			)
@@ -115,7 +114,7 @@ type gitClientMock struct {
 	LogFnInvoked             int
 }
 
-func initGitClientMock(t *testing.T, latestTag, previousTag string) *gitClientMock {
+func initGitClientMock(latestTag, previousTag string) *gitClientMock {
 	return &gitClientMock{
 		IsRepoFn: func() bool {
 			return true
@@ -156,26 +155,26 @@ func initGitClientMock(t *testing.T, latestTag, previousTag string) *gitClientMo
 }
 
 func (m *gitClientMock) IsRepo() bool {
-	m.IsRepoFnInvoked += 1
+	m.IsRepoFnInvoked++
 	return m.IsRepoFn()
 }
 
 func (m *gitClientMock) MakeSafe() error {
-	m.MakeSafeFnInvoked += 1
+	m.MakeSafeFnInvoked++
 	return m.MakeSafeFn()
 }
 
 func (m *gitClientMock) LatestTagOrHash() string {
-	m.LatestTagOrHashFnInvoked += 1
+	m.LatestTagOrHashFnInvoked++
 	return m.LatestTagOrHashFn()
 }
 
 func (m *gitClientMock) PreviousTag(tag string) (string, error) {
-	m.PreviousTagFnInvoked += 1
+	m.PreviousTagFnInvoked++
 	return m.PreviousTagFn(tag)
 }
 
 func (m *gitClientMock) Log(refs ...string) (string, error) {
-	m.LogFnInvoked += 1
+	m.LogFnInvoked++
 	return m.LogFn(refs...)
 }

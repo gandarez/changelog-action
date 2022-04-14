@@ -32,5 +32,6 @@ func sanitize(input string) string {
 	input = strings.ReplaceAll(input, "%", "%25")
 	input = strings.ReplaceAll(input, "\n", "%0A")
 	input = strings.ReplaceAll(input, "\r", "%0D")
+
 	return input
 }
