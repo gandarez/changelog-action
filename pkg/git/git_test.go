@@ -11,7 +11,7 @@ import (
 )
 
 func TestClean(t *testing.T) {
-	gc := git.NewGit()
+	gc := git.NewGit("/path/to/repo")
 
 	value, err := gc.Clean("'test'", nil)
 	require.NoError(t, err)
@@ -20,7 +20,7 @@ func TestClean(t *testing.T) {
 }
 
 func TestCleanErr(t *testing.T) {
-	gc := git.NewGit()
+	gc := git.NewGit("/path/to/repo")
 
 	value, err := gc.Clean("'test'", errors.New("error"))
 	require.Error(t, err)
@@ -30,7 +30,7 @@ func TestCleanErr(t *testing.T) {
 }
 
 func TestLatestTag(t *testing.T) {
-	gc := git.NewGit()
+	gc := git.NewGit("/path/to/repo")
 	gc.GitCmd = func(env map[string]string, args ...string) (string, error) {
 		assert.Nil(t, env)
 		assert.Equal(t, args, []string{"tag", "--points-at", "HEAD", "--sort", "-version:creatordate"})
@@ -46,7 +46,7 @@ func TestLatestTag(t *testing.T) {
 func TestLatestTag_NoTagFound(t *testing.T) {
 	var numCalls int
 
-	gc := git.NewGit()
+	gc := git.NewGit("/path/to/repo")
 	gc.GitCmd = func(env map[string]string, args ...string) (string, error) {
 		numCalls++
 
@@ -70,7 +70,7 @@ func TestLatestTag_NoTagFound(t *testing.T) {
 }
 
 func TestPreviousTag(t *testing.T) {
-	gc := git.NewGit()
+	gc := git.NewGit("/path/to/repo")
 	gc.GitCmd = func(env map[string]string, args ...string) (string, error) {
 		assert.Nil(t, env)
 		assert.Equal(t, args, []string{"describe", "--tags", "--abbrev=0", "tags/v1.4.9^"})
@@ -87,7 +87,7 @@ func TestPreviousTag(t *testing.T) {
 func TestPreviousTagErr(t *testing.T) {
 	var numCalls int
 
-	gc := git.NewGit()
+	gc := git.NewGit("/path/to/repo")
 	gc.GitCmd = func(env map[string]string, args ...string) (string, error) {
 		numCalls++
 
@@ -109,7 +109,7 @@ func TestPreviousTagErr(t *testing.T) {
 }
 
 func TestLog(t *testing.T) {
-	gc := git.NewGit()
+	gc := git.NewGit("/path/to/repo")
 	gc.GitCmd = func(env map[string]string, args ...string) (string, error) {
 		assert.Nil(t, env)
 		assert.Equal(t, args, []string{"log", "--pretty=oneline", "--abbrev-commit", "--no-decorate", "--no-color", "tags/v1.2.3..tags/v1.3.0"})
@@ -124,7 +124,7 @@ func TestLog(t *testing.T) {
 }
 
 func TestLogErr(t *testing.T) {
-	gc := git.NewGit()
+	gc := git.NewGit("/path/to/repo")
 	gc.GitCmd = func(env map[string]string, args ...string) (string, error) {
 		assert.Nil(t, env)
 		assert.Equal(t, args, []string{"log", "--pretty=oneline", "--abbrev-commit", "--no-decorate", "--no-color", "tags/v1.2.3..tags/v1.3.0"})

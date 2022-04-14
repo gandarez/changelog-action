@@ -11,6 +11,7 @@ import (
 
 type gitClient interface {
 	IsRepo() bool
+	MakeSafe() error
 	LatestTagOrHash() string
 	PreviousTag(tag string) (string, error)
 	Log(refs ...string) (string, error)
@@ -29,12 +30,17 @@ func Run() (string, error) {
 
 	log.Debug(params.String())
 
-	git := git.NewGit()
+	git := git.NewGit(params.RepoDir)
 
 	return Changelog(params, git)
 }
 
 func Changelog(params Params, gc gitClient) (string, error) {
+	err := gc.MakeSafe()
+	if err != nil {
+		return "", fmt.Errorf("failed to make safe: %s", err)
+	}
+
 	if !gc.IsRepo() {
 		return "", fmt.Errorf("current folder is not a git repository")
 	}

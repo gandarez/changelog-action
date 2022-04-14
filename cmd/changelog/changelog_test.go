@@ -89,11 +89,26 @@ func TestChangelog(t *testing.T) {
 	}
 }
 
+func TestChangelog_MakeSafeErr(t *testing.T) {
+	gc := &gitClientMock{
+		MakeSafeFn: func() error {
+			return errors.New("error")
+		},
+	}
+
+	_, err := changelog.Changelog(changelog.Params{}, gc)
+	require.Error(t, err)
+
+	assert.EqualError(t, err, "failed to make safe: error")
+}
+
 type gitClientMock struct {
 	LatestTagOrHashFn        func() string
 	LatestTagOrHashFnInvoked int
 	IsRepoFn                 func() bool
 	IsRepoFnInvoked          int
+	MakeSafeFn               func() error
+	MakeSafeFnInvoked        int
 	PreviousTagFn            func(tag string) (string, error)
 	PreviousTagFnInvoked     int
 	LogFn                    func(refs ...string) (string, error)
@@ -105,6 +120,9 @@ func initGitClientMock(t *testing.T, latestTag, previousTag string) *gitClientMo
 		IsRepoFn: func() bool {
 			return true
 		},
+		MakeSafeFn: func() error {
+			return nil
+		},
 		LatestTagOrHashFn: func() string {
 			return latestTag
 		},
@@ -113,20 +131,20 @@ func initGitClientMock(t *testing.T, latestTag, previousTag string) *gitClientMo
 		},
 		LogFn: func(refs ...string) (string, error) {
 			switch refs[0] {
-			case "e63c125b28842b17546cc92f635d7eccc8e909a7":
+			case "e63c125b28842b17546cc92f635d7eccc8e909a7..":
 				return "2b982db First commit\n", nil
-			case "tags/v0.1.0..tags/v0.2.0":
+			case "v0.1.0..v0.2.0":
 				return "2b982db First commit\n" +
 					"5a359bb Second commit\n" +
 					"1774db0 Merge pull request #1 from author/feature/feat-1\n", nil
-			case "53db8447314a82e42e801568a085d424a739260a":
+			case "53db8447314a82e42e801568a085d424a739260a..e63c125b28842b17546cc92f635d7eccc8e909a7":
 				return "2b982db First commit\n" +
 					"5a359bb Second commit\n" +
 					"1774db0 Merge pull request #1 from author/feature/feat-1\n", nil
-			case "tags/v0.2.0..tags/v0.3.0":
+			case "v0.2.0..v0.3.0":
 				return "5a359bb Second commit\n" +
 					"c57f56f Third commit\n", nil
-			case "tags/v0.1.0..tags/v0.3.0":
+			case "v0.1.0..v0.3.0":
 				return "2b982db First commit\n" +
 					"5a359bb Second commit\n" +
 					"c57f56f Third commit\n", nil
@@ -140,6 +158,11 @@ func initGitClientMock(t *testing.T, latestTag, previousTag string) *gitClientMo
 func (m *gitClientMock) IsRepo() bool {
 	m.IsRepoFnInvoked += 1
 	return m.IsRepoFn()
+}
+
+func (m *gitClientMock) MakeSafe() error {
+	m.MakeSafeFnInvoked += 1
+	return m.MakeSafeFn()
 }
 
 func (m *gitClientMock) LatestTagOrHash() string {

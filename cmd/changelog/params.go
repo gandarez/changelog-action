@@ -12,6 +12,7 @@ type Params struct {
 	CurrentTag  string
 	PreviousTag string
 	Exclude     []string
+	RepoDir     string
 	Debug       bool
 }
 
@@ -34,6 +35,12 @@ func LoadParams() (Params, error) {
 		exclude = strings.Split(excludeArr, "\n")
 	}
 
+	var repoDir = "."
+
+	if repoDirStr := actions.GetInput("repo_dir"); repoDirStr != "" {
+		repoDir = repoDirStr
+	}
+
 	var debug bool
 
 	if debugStr := actions.GetInput("debug"); debugStr != "" {
@@ -49,16 +56,18 @@ func LoadParams() (Params, error) {
 		CurrentTag:  currentTag,
 		PreviousTag: previousTag,
 		Exclude:     exclude,
+		RepoDir:     repoDir,
 		Debug:       debug,
 	}, nil
 }
 
 func (p Params) String() string {
 	return fmt.Sprintf(
-		"current tag: %q, previous tag: %q, exclude: %q, debug: %t\n",
+		"current tag: %q, previous tag: %q, exclude: %q, repo dir %q, debug: %t\n",
 		p.CurrentTag,
 		p.PreviousTag,
 		strings.Join(p.Exclude, ","),
+		p.RepoDir,
 		p.Debug,
 	)
 }

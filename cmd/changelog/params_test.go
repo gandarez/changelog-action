@@ -40,6 +40,16 @@ func TestLoadParams_Exclude(t *testing.T) {
 	assert.Equal(t, []string{"^Merge .*", "Fix .*"}, params.Exclude)
 }
 
+func TestLoadParams_RepoDir(t *testing.T) {
+	os.Setenv("INPUT_REPO_DIR", "/var/tmp/folder")
+	defer os.Unsetenv("INPUT_REPO_DIR")
+
+	params, err := changelog.LoadParams()
+	require.NoError(t, err)
+
+	assert.Equal(t, "/var/tmp/folder", params.RepoDir)
+}
+
 func TestLoadParams_Debug(t *testing.T) {
 	os.Setenv("INPUT_DEBUG", "true")
 	defer os.Unsetenv("INPUT_DEBUG")

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"os/exec"
+	"path/filepath"
 	"strings"
 
 	"github.com/apex/log"
@@ -12,13 +13,15 @@ import (
 
 // Client is an struct to run git.
 type Client struct {
-	GitCmd func(env map[string]string, args ...string) (string, error)
+	repoDir string
+	GitCmd  func(env map[string]string, args ...string) (string, error)
 }
 
 // NewGit creates a new git instance.
-func NewGit() *Client {
+func NewGit(repoDir string) *Client {
 	return &Client{
-		GitCmd: gitCmdFn,
+		repoDir: repoDir,
+		GitCmd:  gitCmdFn,
 	}
 }
 
@@ -71,6 +74,21 @@ func (c *Client) Clean(output string, err error) (string, error) {
 // Run runs a git command and returns its output or errors.
 func (c *Client) Run(args ...string) (string, error) {
 	return c.GitCmd(nil, args...)
+}
+
+// MakeSafe adds safe.directory global config.
+func (c *Client) MakeSafe() error {
+	dir, err := filepath.Abs(c.repoDir)
+	if err != nil {
+		return fmt.Errorf("failed to get absolute path for: %s", c.repoDir)
+	}
+
+	_, err = c.Run("config", "--global", "--add", "safe.directory", dir)
+	if err != nil {
+		return fmt.Errorf("failed to set safe current directory")
+	}
+
+	return nil
 }
 
 // IsRepo returns true if current folder is a git repository.
