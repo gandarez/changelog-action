@@ -138,6 +138,16 @@ func (c *Client) PreviousTag(tag string) (string, error) {
 	return result, err
 }
 
+// TagExists returns true if the tag exists.
+func (c *Client) TagExists(tag string) bool {
+	result, err := c.Run("tag", "-l", tag)
+	if err != nil {
+		return false
+	}
+
+	return strings.TrimSpace(result) == tag
+}
+
 func (c *Client) Log(refs ...string) (string, error) {
 	var args = []string{"log", "--pretty=oneline", "--abbrev-commit", "--no-decorate", "--no-color"}
 	args = append(args, refs...)

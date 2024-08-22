@@ -14,6 +14,7 @@ type gitClient interface {
 	MakeSafe() error
 	LatestTagOrHash() string
 	PreviousTag(tag string) (string, error)
+	TagExists(tag string) bool
 	Log(refs ...string) (string, error)
 }
 
@@ -53,7 +54,8 @@ func Changelog(params Params, gc gitClient) (string, error) {
 
 	var refs = []string{fmt.Sprintf("%s..%s", params.PreviousTag, tag)}
 
-	if params.PreviousTag == "" {
+	// If previous tag is not provided or does not exist, get the previous tag and may result in a commit hash.
+	if params.PreviousTag == "" || !gc.TagExists(params.PreviousTag) {
 		previousTag, err := gc.PreviousTag(tag)
 		if err != nil {
 			return "", fmt.Errorf("failed to get previous tag: %s", err)

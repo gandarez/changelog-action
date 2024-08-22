@@ -23,14 +23,11 @@ else
     GOPATH=$(shell go env GOPATH)
 endif
 
-build-darwin:
-	GOOS=darwin GOARCH=amd64 $(GOBUILD) -o ./build/darwin/amd64/$(BINARY_NAME) -v
+build-darwin-arm64:
+	GOOS=darwin GOARCH=arm64 $(GOBUILD) -o ./build/darwin/arm64/$(BINARY_NAME) -v
 
 build-linux:
 	GOOS=linux GOARCH=amd64 $(GOBUILD) -o ./build/linux/amd64/$(BINARY_NAME) -v
-
-build-windows:
-	GOOS=windows GOARCH=amd64 $(GOBUILD) -o ./build/windows/amd64/$(BINARY_NAME).exe -v
 
 # install linter
 .PHONY: install-linter

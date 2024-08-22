@@ -13,6 +13,7 @@ func TestChangelog(t *testing.T) {
 	tests := map[string]struct {
 		LatestTagOrHash string
 		PreviousTag     string
+		TagExists       bool
 		Params          changelog.Params
 		Expected        string
 	}{
@@ -40,6 +41,7 @@ func TestChangelog(t *testing.T) {
 		"current tag set": {
 			LatestTagOrHash: "",
 			PreviousTag:     "v0.2.0",
+			TagExists:       true,
 			Params: changelog.Params{
 				CurrentTag: "v0.3.0",
 			},
@@ -50,6 +52,7 @@ func TestChangelog(t *testing.T) {
 		"current tag and previous tag set": {
 			LatestTagOrHash: "",
 			PreviousTag:     "",
+			TagExists:       true,
 			Params: changelog.Params{
 				CurrentTag:  "v0.3.0",
 				PreviousTag: "v0.1.0",
@@ -58,6 +61,21 @@ func TestChangelog(t *testing.T) {
 				"2b982db First commit\n" +
 				"5a359bb Second commit\n" +
 				"c57f56f Third commit",
+		},
+		"current tag set hash with previous tag set but does not exist": {
+			LatestTagOrHash: "",
+			PreviousTag:     "53db8447314a82e42e801568a085d424a739260a",
+			TagExists:       false,
+			Params: changelog.Params{
+				CurrentTag:  "e63c125b28842b17546cc92f635d7eccc8e909a7",
+				PreviousTag: "v0.0.0",
+				Exclude: []string{
+					"^Merge pull request .*",
+				},
+			},
+			Expected: "## Changelog\n\n" +
+				"2b982db First commit\n" +
+				"5a359bb Second commit",
 		},
 		"auto and exclude": {
 			LatestTagOrHash: "v0.2.0",
@@ -78,6 +96,7 @@ func TestChangelog(t *testing.T) {
 			gc := initGitClientMock(
 				test.LatestTagOrHash,
 				test.PreviousTag,
+				test.TagExists,
 			)
 
 			result, err := changelog.Changelog(test.Params, gc)
@@ -110,11 +129,13 @@ type gitClientMock struct {
 	MakeSafeFnInvoked        int
 	PreviousTagFn            func(tag string) (string, error)
 	PreviousTagFnInvoked     int
+	TagExistsFn              func(tag string) bool
+	TagExistsFnInvoked       int
 	LogFn                    func(refs ...string) (string, error)
 	LogFnInvoked             int
 }
 
-func initGitClientMock(latestTag, previousTag string) *gitClientMock {
+func initGitClientMock(latestTag, previousTag string, tagExists bool) *gitClientMock {
 	return &gitClientMock{
 		IsRepoFn: func() bool {
 			return true
@@ -127,6 +148,9 @@ func initGitClientMock(latestTag, previousTag string) *gitClientMock {
 		},
 		PreviousTagFn: func(tag string) (string, error) {
 			return previousTag, nil
+		},
+		TagExistsFn: func(tag string) bool {
+			return tagExists
 		},
 		LogFn: func(refs ...string) (string, error) {
 			switch refs[0] {
@@ -172,6 +196,11 @@ func (m *gitClientMock) LatestTagOrHash() string {
 func (m *gitClientMock) PreviousTag(tag string) (string, error) {
 	m.PreviousTagFnInvoked++
 	return m.PreviousTagFn(tag)
+}
+
+func (m *gitClientMock) TagExists(tag string) bool {
+	m.TagExistsFnInvoked++
+	return m.TagExistsFn(tag)
 }
 
 func (m *gitClientMock) Log(refs ...string) (string, error) {
