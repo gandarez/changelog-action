@@ -1,11 +1,11 @@
 package main
 
 import (
-	"fmt"
 	"os"
 	"strings"
 
 	"github.com/gandarez/changelog-action/cmd/changelog"
+	"github.com/gandarez/changelog-action/pkg/actions"
 
 	"github.com/apex/log"
 	"github.com/apex/log/handlers/cli"
@@ -21,11 +21,14 @@ func main() {
 		os.Exit(1)
 	}
 
-	// Print changelog.
-	log.Debugf("CHANGELOG: %s", result)
-	fmt.Printf("::set-output name=CHANGELOG::%s\n", sanitize(result))
+	outputFilepath := os.Getenv("GITHUB_OUTPUT")
 
-	os.Exit(0)
+	// Print changelog.
+	log.Infof("CHANGELOG: %s", result)
+
+	if err := actions.SetOutput(outputFilepath, "CHANGELOG", sanitize(result)); err != nil {
+		log.Fatalf("%s\n", err)
+	}
 }
 
 func sanitize(input string) string {

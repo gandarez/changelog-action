@@ -146,10 +146,10 @@ func initGitClientMock(latestTag, previousTag string, tagExists bool) *gitClient
 		LatestTagOrHashFn: func() string {
 			return latestTag
 		},
-		PreviousTagFn: func(tag string) (string, error) {
+		PreviousTagFn: func(_ string) (string, error) {
 			return previousTag, nil
 		},
-		TagExistsFn: func(tag string) bool {
+		TagExistsFn: func(_ string) bool {
 			return tagExists
 		},
 		LogFn: func(refs ...string) (string, error) {
