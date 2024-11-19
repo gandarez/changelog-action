@@ -2,7 +2,6 @@ package main
 
 import (
 	"os"
-	"strings"
 
 	"github.com/gandarez/changelog-action/cmd/changelog"
 	"github.com/gandarez/changelog-action/pkg/actions"
@@ -26,15 +25,7 @@ func main() {
 	// Print changelog.
 	log.Infof("CHANGELOG: %s", result)
 
-	if err := actions.SetOutput(outputFilepath, "CHANGELOG", sanitize(result)); err != nil {
+	if err := actions.SetOutput(outputFilepath, "CHANGELOG", result); err != nil {
 		log.Fatalf("%s\n", err)
 	}
-}
-
-func sanitize(input string) string {
-	input = strings.ReplaceAll(input, "%", "%25")
-	input = strings.ReplaceAll(input, "\n", "%0A")
-	input = strings.ReplaceAll(input, "\r", "%0D")
-
-	return input
 }
